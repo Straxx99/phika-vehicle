@@ -46,9 +46,10 @@ export default function LeadCaptureForm() {
       // Reset success message after 5 seconds
       setTimeout(() => setSubmitSuccess(false), 5000)
 
-    } catch (error: any) {
+    } catch (error: unknown) {
       console.error('Error submitting form:', error)
-      setSubmitError(error.message || 'Something went wrong. Please try again.')
+      const errorMessage = error instanceof Error ? error.message : 'Something went wrong. Please try again.'
+      setSubmitError(errorMessage)
     } finally {
       setIsSubmitting(false)
     }
@@ -108,7 +109,7 @@ export default function LeadCaptureForm() {
           )}
         </div>
 
-        {/* Vehicle Make Field - NOW TEXT INPUT */}
+        {/* Vehicle Make Field */}
         <div>
           <label htmlFor="vehicleMake" className="block text-sm font-medium text-white mb-2">
             Vehicle Make *
