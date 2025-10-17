@@ -25,8 +25,13 @@ export default function LeadCaptureForm() {
     setSubmitError(null)
 
     try {
+      // Generate verification token
+      const verificationToken = crypto.randomUUID()
+      const expiresAt = new Date()
+      expiresAt.setHours(expiresAt.getHours() + 24) // Token expires in 24 hours
+
       // Insert lead into database
-      const { error } = await supabase
+      const { error: dbError } = await supabase
         .from('leads')
         .insert({
           name: data.name,
@@ -35,10 +40,26 @@ export default function LeadCaptureForm() {
           vehicle_make: data.vehicleMake,
           lead_status: 'unverified',
           email_verified: false,
-          phone_verified: false
+          phone_verified: false,
+          email_verification_token: verificationToken,
+          email_verification_token_expires: expiresAt.toISOString()
         })
 
-      if (error) throw error
+      if (dbError) throw dbError
+
+      // Send verification email
+      const emailResponse = await fetch('/api/send-verification', {
+        method: 'POST',
+        headers: { 'Content-Type': 'application/json' },
+        body: JSON.stringify({
+          email: data.email,
+          token: verificationToken
+        })
+      })
+
+      if (!emailResponse.ok) {
+        throw new Error('Failed to send verification email')
+      }
 
       setSubmitSuccess(true)
       reset()
