@@ -1,6 +1,9 @@
 import { NextRequest, NextResponse } from 'next/server'
 import { supabaseServer } from '../../../lib/supabase-server'
 
+export const dynamic = 'force-dynamic'
+export const runtime = 'nodejs'
+
 export async function POST(request: NextRequest) {
   try {
     const { token } = await request.json()
@@ -43,7 +46,7 @@ export async function POST(request: NextRequest) {
       .from('leads')
       .update({
         email_verified: true,
-        lead_status: newLeadStatus, // Only 'verified' if BOTH email + phone verified
+        lead_status: newLeadStatus,
         email_verification_token: null,
         email_verification_token_expires: null
       })
@@ -54,11 +57,11 @@ export async function POST(request: NextRequest) {
       throw updateError
     }
 
-    const message = newLeadStatus === 'verified' 
+    const message = newLeadStatus === 'verified'
       ? 'Your email has been verified successfully! Your account is now fully verified.'
       : 'Your email has been verified successfully! Please verify your phone number to complete registration.'
 
-    return NextResponse.json({ 
+    return NextResponse.json({
       success: true,
       message,
       needsPhoneVerification: !lead.phone_verified
