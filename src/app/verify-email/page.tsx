@@ -1,10 +1,11 @@
 'use client'
 
+import { Suspense } from 'react'
 import { useEffect, useState } from 'react'
 import { useSearchParams } from 'next/navigation'
 import Link from 'next/link'
 
-export default function VerifyEmailPage() {
+function VerifyEmailContent() {
   const searchParams = useSearchParams()
   const token = searchParams.get('token')
   
@@ -83,7 +84,7 @@ export default function VerifyEmailPage() {
             <p className="text-white/90 mb-6">{message}</p>
             <Link 
               href="/"
-              className="inline-block py-3 px-6 bg-[#F1C141] hover:bg-[#F1C141]/90 text-[##3D2966] font-semibold rounded-lg transition-colors"
+              className="inline-block py-3 px-6 bg-[#F1C141] hover:bg-[#F1C141]/90 text-[#3D2966] font-semibold rounded-lg transition-colors"
             >
               Back to Home
             </Link>
@@ -105,5 +106,17 @@ export default function VerifyEmailPage() {
         )}
       </div>
     </div>
+  )
+}
+
+export default function VerifyEmailPage() {
+  return (
+    <Suspense fallback={
+      <div className="min-h-screen bg-gradient-to-br from-[#3D2966] via-[#9C45A2] to-[#F1C141] flex items-center justify-center">
+        <div className="animate-spin rounded-full h-12 w-12 border-b-2 border-white"></div>
+      </div>
+    }>
+      <VerifyEmailContent />
+    </Suspense>
   )
 }
