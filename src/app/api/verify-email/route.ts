@@ -35,12 +35,15 @@ export async function POST(request: NextRequest) {
       )
     }
 
-    // Update lead - mark email as verified (service role bypasses RLS)
+    // Check if phone is also verified to determine lead_status
+    const newLeadStatus = lead.phone_verified ? 'verified' : 'unverified'
+
+    // Update lead - mark email as verified
     const { error: updateError } = await supabaseServer
       .from('leads')
       .update({
         email_verified: true,
-        lead_status: 'verified',
+        lead_status: newLeadStatus, // Only 'verified' if BOTH email + phone verified
         email_verification_token: null,
         email_verification_token_expires: null
       })
@@ -51,9 +54,14 @@ export async function POST(request: NextRequest) {
       throw updateError
     }
 
+    const message = newLeadStatus === 'verified' 
+      ? 'Your email has been verified successfully! Your account is now fully verified.'
+      : 'Your email has been verified successfully! Please verify your phone number to complete registration.'
+
     return NextResponse.json({ 
       success: true,
-      message: 'Your email has been verified successfully!' 
+      message,
+      needsPhoneVerification: !lead.phone_verified
     })
 
   } catch (error) {
