@@ -5,17 +5,17 @@ import { useForm } from 'react-hook-form'
 import { zodResolver } from '@hookform/resolvers/zod'
 import { leadFormSchema, type LeadFormData } from '../lib/validations'
 import { supabase } from '../lib/supabase-client'
+import { useRouter } from 'next/navigation'
 
 export default function LeadCaptureForm() {
+  const router = useRouter()
   const [isSubmitting, setIsSubmitting] = useState(false)
-  const [submitSuccess, setSubmitSuccess] = useState(false)
   const [submitError, setSubmitError] = useState<string | null>(null)
 
   const {
     register,
     handleSubmit,
     formState: { errors },
-    reset
   } = useForm<LeadFormData>({
     resolver: zodResolver(leadFormSchema)
   })
@@ -25,13 +25,13 @@ export default function LeadCaptureForm() {
     setSubmitError(null)
 
     try {
-      // Generate verification token
+      // Generate verification token for email
       const verificationToken = crypto.randomUUID()
       const expiresAt = new Date()
       expiresAt.setHours(expiresAt.getHours() + 24) // Token expires in 24 hours
 
-      // Insert lead into database
-      const { error: dbError } = await supabase
+      // Insert lead into database and get the ID back
+      const { data: lead, error: dbError } = await supabase
         .from('leads')
         .insert({
           name: data.name,
@@ -44,6 +44,8 @@ export default function LeadCaptureForm() {
           email_verification_token: verificationToken,
           email_verification_token_expires: expiresAt.toISOString()
         })
+        .select()
+        .single()
 
       if (dbError) throw dbError
 
@@ -61,11 +63,8 @@ export default function LeadCaptureForm() {
         throw new Error('Failed to send verification email')
       }
 
-      setSubmitSuccess(true)
-      reset()
-      
-      // Reset success message after 5 seconds
-      setTimeout(() => setSubmitSuccess(false), 5000)
+      // Redirect to phone verification page
+      router.push(`/verify-phone?leadId=${lead.id}&phone=${encodeURIComponent(data.phone)}`)
 
     } catch (error: unknown) {
       console.error('Error submitting form:', error)
@@ -155,15 +154,6 @@ export default function LeadCaptureForm() {
         >
           {isSubmitting ? 'Submitting...' : 'Get My Vehicle Value'}
         </button>
-
-        {/* Success Message */}
-        {submitSuccess && (
-          <div className="p-4 bg-green-500/20 border border-green-500/50 rounded-lg">
-            <p className="text-green-200 text-sm">
-              ✅ Thank you! Please check your email to verify your account.
-            </p>
-          </div>
-        )}
 
         {/* Error Message */}
         {submitError && (

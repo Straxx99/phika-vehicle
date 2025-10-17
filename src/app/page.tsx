@@ -1,12 +1,25 @@
 import LeadCaptureForm from '../components/LeadCaptureForm'
+import Image from 'next/image'
 
 export default function Home() {
   return (
     <div className="min-h-screen bg-gradient-to-br from-[#3D2966] via-[#9C45A2] to-[#F1C141]">
       <div className="container mx-auto px-4 py-16">
+        {/* Logo */}
+        <div className="flex justify-center mb-8">
+          <Image
+            src="/phika-logo.jpg"
+            alt="Phik'a Logo"
+            width={300}
+            height={100}
+            priority
+            className="w-auto h-16 md:h-20"
+          />
+        </div>
+
         <div className="max-w-4xl mx-auto text-center text-white mb-12">
           <h1 className="text-5xl font-bold mb-6">
-            Phik&apos;a Vehicle Protection
+            Vehicle Protection
           </h1>
           <p className="text-xl mb-4">
             Discover your vehicle&apos;s true value and protection benefits
